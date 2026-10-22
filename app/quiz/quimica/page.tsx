@@ -24,7 +24,15 @@ export default function QuizQuimica() {
     fetch('/api/questoes')
       .then(res => res.json())
       .then(data => {
-        setQuestoes(data);
+        if (data.error || !Array.isArray(data) || data.length === 0) {
+          setQuestoes([]); // Garante que fica vazio em caso de erro
+        } else {
+          setQuestoes(data);
+        }
+        setCarregando(false);
+      })
+      .catch(() => {
+        setQuestoes([]);
         setCarregando(false);
       });
   }, []);
@@ -52,6 +60,24 @@ export default function QuizQuimica() {
 
   if (carregando) {
     return <div className="min-h-screen flex items-center justify-center bg-slate-900 text-emerald-400 font-bold text-xl">A preparar as questões...</div>;
+  }
+
+  // Proteção: Se a API falhar ou não trouxer questões
+  if (!carregando && questoes.length === 0) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-slate-900 p-6 text-slate-100">
+        <div className="bg-slate-800 p-8 rounded-2xl shadow-xl text-center max-w-md w-full border border-slate-700">
+          <h2 className="text-xl font-bold mb-4 text-red-400">Ops! As questões fugiram.</h2>
+          <p className="text-slate-400 mb-6">Não conseguimos conectar ao banco de dados no momento.</p>
+          <button 
+            onClick={() => router.push('/dashboard')}
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition"
+          >
+            Voltar ao Menu
+          </button>
+        </div>
+      </main>
+    );
   }
 
   if (quizTerminado) {
