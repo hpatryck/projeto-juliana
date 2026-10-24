@@ -47,6 +47,38 @@ export default function QuizQuimica() {
       });
   }, []);
 
+  // NOVO: Guarda os resultados e os erros automaticamente quando o quiz termina!
+  useEffect(() => {
+    if (fase === 'resultado') {
+      const jogadorId = localStorage.getItem('jogadorId');
+      if (!jogadorId) return;
+
+      // Descobre quais foram as questões que a Juliana errou
+      const erros: number[] = [];
+      questoesFiltradas.forEach((questao, index) => {
+        const resposta = respostasConfirmadas[index];
+        if (resposta && !resposta.is_correta) {
+          erros.push(questao.id); // Guarda o ID da pergunta errada
+        }
+      });
+
+      // Envia o relatório final para a base de dados
+      fetch('/api/salvar-quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jogadorId,
+          disciplina: 'Química',
+          assuntos: temasSelecionados,
+          pontuacao: acertos,
+          total: questoesFiltradas.length,
+          tempoGasto: 0, // Cronômetro (podemos implementar visualmente no futuro)
+          erros
+        })
+      }).catch(err => console.error("Erro de comunicação:", err));
+    }
+  }, [fase]); // Só dispara quando a fase muda para 'resultado'
+
   const toggleTema = (tema: string) => {
     setTemasSelecionados(prev =>
       prev.includes(tema) ? prev.filter(t => t !== tema) : [...prev, tema]
