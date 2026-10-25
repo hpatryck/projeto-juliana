@@ -11,7 +11,6 @@ export default function Dashboard() {
     const nomeGuardado = localStorage.getItem('jogadorNome');
     const idGuardado = localStorage.getItem('jogadorId');
     
-    // Agora exigimos o ID (Login Rígido) para poder entrar no Dashboard
     if (nomeGuardado && idGuardado) {
       setNome(nomeGuardado);
     } else {
@@ -50,6 +49,7 @@ export default function Dashboard() {
           <h2 className="text-xl font-bold mb-4 text-slate-300 px-2">Novo Treino</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             
+            {/* QUÍMICA */}
             <button 
               onClick={() => router.push('/quiz/quimica')}
               className="col-span-2 md:col-span-1 bg-slate-800 border-2 border-emerald-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(16,185,129,0.15)] group"
@@ -58,28 +58,34 @@ export default function Dashboard() {
               <span className="font-bold text-lg">Química</span>
             </button>
 
+            {/* GEOGRAFIA (NOVO) */}
+            <button 
+              onClick={() => router.push('/quiz/geografia')}
+              className="col-span-2 md:col-span-1 bg-slate-800 border-2 border-blue-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(59,130,246,0.15)] group"
+            >
+              <span className="text-5xl mb-3 group-hover:scale-110 transition-transform">🌍</span>
+              <span className="font-bold text-lg">Geografia</span>
+            </button>
+
             {/* Disciplinas Futuras */}
             <button disabled className="col-span-2 md:col-span-1 bg-slate-800/40 border border-slate-700 rounded-3xl p-6 flex flex-col items-center justify-center opacity-40 cursor-not-allowed">
               <span className="text-5xl mb-3 grayscale">📐</span>
-              <span className="font-bold">Matemática</span>
-            </button>
-            <button disabled className="col-span-2 md:col-span-1 bg-slate-800/40 border border-slate-700 rounded-3xl p-6 flex flex-col items-center justify-center opacity-40 cursor-not-allowed">
-              <span className="text-5xl mb-3 grayscale">⚡</span>
-              <span className="font-bold">Física</span>
+              <span className="font-bold text-slate-400">Matemática</span>
             </button>
             <button disabled className="col-span-2 md:col-span-1 bg-slate-800/40 border border-slate-700 rounded-3xl p-6 flex flex-col items-center justify-center opacity-40 cursor-not-allowed">
               <span className="text-5xl mb-3 grayscale">🧬</span>
-              <span className="font-bold">Biologia</span>
+              <span className="font-bold text-slate-400">Biologia</span>
             </button>
+
           </div>
         </section>
 
-        {/* Secção 2: Ferramentas de Desempenho (As Novidades!) */}
+        {/* Secção 2: Ferramentas de Desempenho */}
         <section>
           <h2 className="text-xl font-bold mb-4 text-slate-300 px-2">Central de Desempenho</h2>
           <div className="flex flex-col gap-4">
             
-            {/* Botão: Histórico */}
+            {/* Histórico */}
             <button 
               onClick={() => router.push('/historico')}
               className="w-full bg-slate-800 border border-slate-700 rounded-3xl p-6 flex items-center justify-between hover:bg-slate-700 hover:border-blue-500/50 transition-all shadow-lg group"
@@ -94,7 +100,7 @@ export default function Dashboard() {
               <span className="text-blue-500 font-bold text-2xl hidden md:block group-hover:translate-x-2 transition-transform">➔</span>
             </button>
 
-            {/* Botão: Estatísticas */}
+            {/* Estatísticas */}
             <button 
               onClick={() => router.push('/estatisticas')}
               className="w-full bg-slate-800 border border-slate-700 rounded-3xl p-6 flex items-center justify-between hover:bg-slate-700 hover:border-purple-500/50 transition-all shadow-lg group"
@@ -109,7 +115,7 @@ export default function Dashboard() {
               <span className="text-purple-500 font-bold text-2xl hidden md:block group-hover:translate-x-2 transition-transform">➔</span>
             </button>
 
-            {/* Botão: Refazer Erros */}
+            {/* Refazer Erros */}
             <button 
               onClick={() => router.push('/revisao')}
               className="w-full bg-slate-800 border border-slate-700 rounded-3xl p-6 flex items-center justify-between hover:bg-slate-700 hover:border-red-500/50 transition-all shadow-lg group relative overflow-hidden"
