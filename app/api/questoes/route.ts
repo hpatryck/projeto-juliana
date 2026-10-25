@@ -7,11 +7,12 @@ export async function GET() {
   try {
     const pool = createPool({ connectionString: process.env.DATABASE_URL });
     
-    const { rows: perguntas } = await pool.sql`SELECT * FROM perguntas WHERE disciplina = 'Química'`;
+    // O SEGREDO ESTÁ AQUI: Removemos o "WHERE disciplina = 'Química'"
+    // Agora o sistema puxa TODAS as perguntas do banco de dados!
+    const { rows: perguntas } = await pool.sql`SELECT * FROM perguntas`;
     const { rows: alternativas } = await pool.sql`SELECT * FROM alternativas`;
 
     const questoesCompletas = perguntas.map(pergunta => {
-      // Filtra as alternativas desta pergunta e embaralha a ordem delas de forma aleatória
       const alternativasEmbaralhadas = alternativas
         .filter(alt => alt.pergunta_id === pergunta.id)
         .sort(() => Math.random() - 0.5);
@@ -22,7 +23,6 @@ export async function GET() {
       };
     });
 
-    // Sorteia também a ordem das próprias perguntas para o quiz nunca ser repetitivo!
     const questoesEmbaralhadas = questoesCompletas.sort(() => Math.random() - 0.5);
 
     return NextResponse.json(questoesEmbaralhadas);
