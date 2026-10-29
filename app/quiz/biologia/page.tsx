@@ -13,7 +13,9 @@ const TEMAS_DISPONIVEIS = [
   'Evolução', 
   'Relações Ecológicas', 
   'Botânica e Plantas', 
-  'Genética'
+  'Genética',
+  'Funcionalidade dos fungos, vírus e bactérias',
+  'Biogeoquímica'
 ];
 
 export default function QuizBiologia() {
