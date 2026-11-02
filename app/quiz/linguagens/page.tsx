@@ -3,217 +3,219 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-// Tipagem baseada na nossa base de dados Prisma
-type Alternativa = {
-  id: number;
-  texto: string;
-  is_correta: boolean;
-};
+type Alternativa = { id: number; texto: string; is_correta: boolean };
+type Questao = { id: number; disciplina?: string; tema: string; enunciado: string; explicacao: string; alternativas: Alternativa[] };
 
-type Pergunta = {
-  id: number;
-  disciplina: string;
-  tema: string;
-  enunciado: string;
-  explicacao: string;
-  alternativas: Alternativa[];
-};
+const TEMAS_DISPONIVEIS = [
+  'Literatura', 
+  'Funções da Linguagem', 
+  'Figuras de Linguagens', 
+  'Gênero textual'
+];
 
 export default function QuizLinguagens() {
   const router = useRouter();
-  const [perguntas, setPerguntas] = useState<Pergunta[]>([]);
-  const [indiceAtual, setIndiceAtual] = useState(0);
+  const [todasQuestoes, setTodasQuestoes] = useState<Questao[]>([]);
   const [carregando, setCarregando] = useState(true);
+
+  const [fase, setFase] = useState<'selecao' | 'jogando' | 'resultado'>('selecao');
+  const [temasSelecionados, setTemasSelecionados] = useState<string[]>(TEMAS_DISPONIVEIS);
+
+  const [questoesFiltradas, setQuestoesFiltradas] = useState<Questao[]>([]);
+  const [indiceAtual, setIndiceAtual] = useState(0);
+  const [alternativaMarcada, setAlternativaMarcada] = useState<Alternativa | null>(null);
   
-  // Estados do Jogo
-  const [alternativaSelecionada, setAlternativaSelecionada] = useState<number | null>(null);
-  const [respondido, setRespondido] = useState(false);
-  const [pontuacao, setPontuacao] = useState(0);
-  const [quizFinalizado, setQuizFinalizado] = useState(false);
+  const [respostasConfirmadas, setRespostasConfirmadas] = useState<{ [key: number]: Alternativa }>({});
+  const [acertos, setAcertos] = useState(0);
 
   useEffect(() => {
-    // Vai buscar as perguntas de Linguagens à nossa API
-    async function carregarPerguntas() {
-      try {
-        // Supondo que a sua API aceita a disciplina como parâmetro
-        const res = await fetch('/api/perguntas?disciplina=Linguagens');
-        if (!res.ok) throw new Error('Erro ao buscar perguntas');
-        
-        const data = await res.json();
-        
-        // Baralha as perguntas para não ser sempre a mesma ordem
-        const perguntasBaralhadas = data.sort(() => Math.random() - 0.5).slice(0, 10); // Traz 10 perguntas por partida
-        setPerguntas(perguntasBaralhadas);
-      } catch (erro) {
-        console.error("Erro ao carregar as questões:", erro);
-      } finally {
+    fetch('/api/questoes')
+      .then(res => res.json())
+      .then(data => {
+        if (data.error || !Array.isArray(data) || data.length === 0) {
+          setTodasQuestoes([]);
+        } else {
+          // Filtra estritamente as questões da disciplina de Linguagens
+          const linguagens = data.filter((q: Questao) => q.disciplina === 'Linguagens');
+          setTodasQuestoes(linguagens);
+        }
         setCarregando(false);
-      }
-    }
-
-    carregarPerguntas();
+      })
+      .catch(() => { 
+        setTodasQuestoes([]); 
+        setCarregando(false); 
+      });
   }, []);
 
-  const handleResponder = (alternativa: Alternativa) => {
-    if (respondido) return; // Evita duplo clique
+  const toggleTema = (tema: string) => {
+    setTemasSelecionados(prev =>
+      prev.includes(tema) ? prev.filter(t => t !== tema) : [...prev, tema]
+    );
+  };
 
-    setAlternativaSelecionada(alternativa.id);
-    setRespondido(true);
+  const iniciarQuiz = () => {
+    if (temasSelecionados.length === 0) return;
+    const filtradas = todasQuestoes.filter(q => temasSelecionados.includes(q.tema));
+    setQuestoesFiltradas(filtradas);
+    setIndiceAtual(0);
+    setAlternativaMarcada(null);
+    setRespostasConfirmadas({});
+    setAcertos(0);
+    setFase('jogando');
+  };
 
-    if (alternativa.is_correta) {
-      setPontuacao((prev) => prev + 1);
-    } else {
-      // Se errou, guarda a pergunta no LocalStorage para o "Cofre de Revisão"
-      const perguntaAtual = perguntas[indiceAtual];
-      const errosSalvos = JSON.parse(localStorage.getItem('errosJuliana') || '[]');
-      
-      // Evita guardar a mesma pergunta duplicada no cofre
-      const jaExiste = errosSalvos.find((p: Pergunta) => p.id === perguntaAtual.id);
-      if (!jaExiste) {
-        errosSalvos.push(perguntaAtual);
-        localStorage.setItem('errosJuliana', JSON.stringify(errosSalvos));
-      }
+  const selecionarAlternativa = (alt: Alternativa) => {
+    if (respostasConfirmadas[indiceAtual]) return;
+    setAlternativaMarcada(alt);
+  };
+
+  const confirmarResposta = () => {
+    if (!alternativaMarcada) return;
+    setRespostasConfirmadas(prev => ({ ...prev, [indiceAtual]: alternativaMarcada }));
+    if (alternativaMarcada.is_correta) setAcertos(prev => prev + 1);
+  };
+
+  const salvarResultadoFinal = async () => {
+    const jogadorId = localStorage.getItem('jogadorId');
+    if (!jogadorId) {
+      alert("⚠️ O teu Login expirou ou não está guardado! Volta ao início para entrar.");
+      return;
+    }
+
+    const erros: number[] = [];
+    questoesFiltradas.forEach((questao, index) => {
+      const resposta = respostasConfirmadas[index];
+      if (resposta && !resposta.is_correta) erros.push(questao.id);
+    });
+
+    try {
+      const res = await fetch('/api/salvar-quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jogadorId,
+          disciplina: 'Linguagens',
+          assuntos: temasSelecionados,
+          pontuacao: acertos,
+          total: questoesFiltradas.length,
+          tempoGasto: 0,
+          erros
+        })
+      });
+
+      if (!res.ok) alert("❌ Erro do Servidor ao tentar guardar o teste.");
+      else alert("✅ SUCESSO! Teste gravado no teu Histórico."); 
+    } catch (err) {
+      alert("❌ Erro de Internet: Não foi possível contactar o servidor.");
     }
   };
 
-  const handleProximaPergunta = () => {
-    if (indiceAtual + 1 < perguntas.length) {
-      setIndiceAtual((prev) => prev + 1);
-      setRespondido(false);
-      setAlternativaSelecionada(null);
+  const proximaQuestao = () => {
+    if (indiceAtual + 1 < questoesFiltradas.length) {
+      setIndiceAtual(prev => prev + 1);
+      setAlternativaMarcada(respostasConfirmadas[indiceAtual + 1] || null);
     } else {
-      setQuizFinalizado(true);
+      setFase('resultado');
+      salvarResultadoFinal();
     }
   };
 
-  if (carregando) {
+  const questaoAnterior = () => {
+    if (indiceAtual > 0) {
+      setIndiceAtual(prev => prev - 1);
+      setAlternativaMarcada(respostasConfirmadas[indiceAtual - 1] || null);
+    }
+  };
+
+  // ========================== RENDERS DE TELA ==========================
+  if (carregando) return <div className="min-h-screen flex items-center justify-center bg-slate-900 text-orange-400 font-bold text-xl">A preparar as questões...</div>;
+  if (!carregando && todasQuestoes.length === 0) return <main className="flex min-h-screen items-center justify-center bg-slate-900 text-red-400 font-bold">Ops! Banco de dados inacessível ou sem questões de Linguagens.</main>;
+
+  if (fase === 'selecao') {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
-        <div className="animate-spin text-5xl mb-4">📚</div>
-        <h2 className="text-2xl font-bold text-orange-500 animate-pulse">A preparar os textos...</h2>
-      </div>
+      <main className="min-h-screen bg-slate-900 text-slate-100 p-6 flex flex-col items-center">
+        <div className="w-full max-w-2xl mt-4">
+          <button onClick={() => router.push('/dashboard')} className="text-slate-400 hover:text-white flex items-center gap-2 mb-6 font-medium">⬅ Voltar ao Menu</button>
+          <h1 className="text-3xl font-bold text-orange-400 mb-2">Treino de Linguagens</h1>
+          <p className="text-slate-400 mb-8">Seleciona os assuntos que desejas estudar hoje:</p>
+          <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 mb-8 shadow-lg flex flex-col gap-3">
+            {TEMAS_DISPONIVEIS.map(tema => (
+              <label key={tema} className="flex items-center gap-4 p-3 bg-slate-700/30 rounded-xl cursor-pointer hover:bg-slate-700 transition border border-slate-600">
+                <input type="checkbox" checked={temasSelecionados.includes(tema)} onChange={() => toggleTema(tema)} className="w-5 h-5 accent-orange-500" />
+                <span className="font-medium">{tema}</span>
+              </label>
+            ))}
+          </div>
+          <button onClick={iniciarQuiz} disabled={temasSelecionados.length === 0} className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl transition">
+            Começar a Praticar ➔
+          </button>
+        </div>
+      </main>
     );
   }
 
-  if (perguntas.length === 0) {
+  if (fase === 'resultado') {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-6">
-        <h2 className="text-2xl font-bold text-red-500 mb-4">Nenhuma questão encontrada!</h2>
-        <button onClick={() => router.push('/dashboard')} className="bg-slate-800 px-6 py-3 rounded-xl font-bold">Voltar ao Início</button>
-      </div>
-    );
-  }
-
-  if (quizFinalizado) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
-        <div className="bg-slate-900 p-8 rounded-3xl border border-slate-800 shadow-2xl max-w-md w-full">
-          <div className="text-6xl mb-6">{pontuacao > 6 ? '🎉' : '💪'}</div>
-          <h2 className="text-3xl font-bold text-white mb-2">Fim do Treino!</h2>
-          <p className="text-slate-400 mb-8">Acertaste <span className="text-orange-500 font-bold text-xl">{pontuacao}</span> de {perguntas.length} questões.</p>
-          
-          <div className="flex flex-col gap-4">
-            <button 
-              onClick={() => window.location.reload()} 
-              className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 rounded-xl transition"
-            >
-              Jogar Novamente
-            </button>
-            <button 
-              onClick={() => router.push('/dashboard')} 
-              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl transition border border-slate-700"
-            >
-              Voltar ao Dashboard
-            </button>
+      <main className="flex min-h-screen flex-col items-center justify-center bg-slate-900 p-6 text-slate-100">
+        <div className="bg-slate-800 p-8 rounded-2xl shadow-xl text-center max-w-md w-full border border-slate-700">
+          <h1 className="text-5xl mb-4">🏆</h1>
+          <h2 className="text-2xl font-bold mb-2">Quiz Terminado!</h2>
+          <p className="text-slate-400 mb-8 text-lg">Acertaste <strong className="text-orange-400">{acertos}</strong> de {questoesFiltradas.length} questões.</p>
+          <div className="flex flex-col gap-3">
+            <button onClick={() => setFase('selecao')} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 rounded-xl transition">Treinar outros assuntos</button>
+            <button onClick={() => router.push('/dashboard')} className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-xl transition">Voltar ao Menu Principal</button>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
-  const perguntaAtual = perguntas[indiceAtual];
+  const questaoAtual = questoesFiltradas[indiceAtual];
+  const jaConfirmou = !!respostasConfirmadas[indiceAtual];
 
   return (
-    <main className="min-h-screen bg-slate-950 p-4 md:p-8 font-sans text-slate-200">
-      <div className="max-w-3xl mx-auto mt-4 md:mt-10">
-        
-        {/* Cabeçalho do Jogo */}
-        <div className="flex justify-between items-center mb-8">
-          <button onClick={() => router.push('/dashboard')} className="text-slate-400 hover:text-white transition">
-            ← Sair
-          </button>
-          <div className="bg-slate-900 px-4 py-2 rounded-full border border-slate-800 font-bold text-orange-400">
-            Questão {indiceAtual + 1} de {perguntas.length}
-          </div>
-          <div className="text-slate-400 font-medium">
-            Acertos: <span className="text-emerald-400 font-bold">{pontuacao}</span>
-          </div>
+    <main className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8 flex flex-col items-center">
+      <div className="w-full max-w-2xl">
+        <div className="flex justify-between items-center mb-6">
+          <button onClick={() => setFase('selecao')} className="text-slate-400 hover:text-white flex items-center gap-1 transition text-sm font-medium">⬅ Trocar de Assunto</button>
+          <span className="bg-slate-800 px-4 py-1 rounded-full text-sm font-medium border border-slate-700 text-orange-400">Questão {indiceAtual + 1} de {questoesFiltradas.length}</span>
         </div>
-
-        {/* Área da Pergunta */}
-        <div className="bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-800 shadow-xl mb-6 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-slate-800">
-            <div 
-              className="h-full bg-orange-500 transition-all duration-500" 
-              style={{ width: `${((indiceAtual) / perguntas.length) * 100}%` }}
-            ></div>
-          </div>
-          
-          <span className="inline-block px-3 py-1 bg-orange-950 text-orange-400 text-sm font-bold rounded-lg mb-4 border border-orange-900/50">
-            {perguntaAtual.tema}
-          </span>
-          
-          <h2 className="text-xl md:text-2xl font-bold leading-relaxed text-white">
-            {perguntaAtual.enunciado}
-          </h2>
-        </div>
-
-        {/* Alternativas */}
-        <div className="flex flex-col gap-3 mb-8">
-          {perguntaAtual.alternativas.map((alt) => {
+        <div className="mb-4"><span className="bg-orange-900/40 text-orange-400 border border-orange-800 px-3 py-1 rounded text-sm font-bold">{questaoAtual.tema.toUpperCase()}</span></div>
+        <div className="bg-slate-800 p-6 md:p-8 rounded-2xl shadow-lg border border-slate-700 mb-6"><p className="text-lg leading-relaxed">{questaoAtual.enunciado}</p></div>
+        <div className="flex flex-col gap-3 mb-6">
+          {questaoAtual.alternativas.map((alt) => {
+            let corBotao = "bg-slate-800 border-slate-600 hover:bg-slate-700";
+            if (jaConfirmou) {
+              if (alt.is_correta) corBotao = "bg-emerald-900/50 border-emerald-500 text-emerald-100";
+              else if (respostasConfirmadas[indiceAtual].id === alt.id) corBotao = "bg-red-900/50 border-red-500 text-red-100";
+              else corBotao = "bg-slate-800 border-slate-700 opacity-50";
+            } else if (alternativaMarcada?.id === alt.id) corBotao = "bg-blue-900/30 border-blue-500 text-blue-100 ring-2 ring-blue-500/30";
             
-            // Lógica de cores para mostrar certo/errado após responder
-            let corBotao = "bg-slate-800 border-slate-700 hover:bg-slate-700 hover:border-orange-500/50";
-            if (respondido) {
-              if (alt.is_correta) {
-                corBotao = "bg-emerald-900/40 border-emerald-500 text-emerald-100"; // Resposta Certa (Fica verde)
-              } else if (alternativaSelecionada === alt.id) {
-                corBotao = "bg-red-900/40 border-red-500 text-red-100"; // Resposta que ela errou (Fica vermelha)
-              } else {
-                corBotao = "bg-slate-900 border-slate-800 opacity-50 cursor-not-allowed"; // Outras opções ficam apagadas
-              }
-            }
-
             return (
-              <button
-                key={alt.id}
-                onClick={() => handleResponder(alt)}
-                disabled={respondido}
-                className={`text-left p-5 rounded-2xl border-2 transition-all duration-200 shadow-sm ${corBotao}`}
-              >
-                <span className="text-base md:text-lg">{alt.texto}</span>
+              <button key={alt.id} onClick={() => selecionarAlternativa(alt)} disabled={jaConfirmou} className={`text-left p-4 rounded-xl border-2 transition-all ${corBotao}`}>
+                {alt.texto}
               </button>
             );
           })}
         </div>
-
-        {/* Explicação e Botão de Avançar */}
-        {respondido && (
-          <div className="animate-fade-in-up">
-            <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 mb-6">
-              <h3 className="text-emerald-400 font-bold mb-2 text-lg">Explicação:</h3>
-              <p className="text-slate-300 leading-relaxed">{perguntaAtual.explicacao}</p>
-            </div>
-            
-            <button
-              onClick={handleProximaPergunta}
-              className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold text-lg py-5 rounded-2xl transition shadow-lg hover:shadow-orange-500/20 active:scale-[0.98]"
-            >
-              {indiceAtual + 1 === perguntas.length ? 'Ver Resultado Final' : 'Próxima Questão ➔'}
-            </button>
+        {jaConfirmou && (
+          <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl shadow-lg mb-8 animate-fade-in">
+            <h3 className={`font-bold mb-3 ${respostasConfirmadas[indiceAtual].is_correta ? 'text-emerald-400' : 'text-red-400'}`}>
+              {respostasConfirmadas[indiceAtual].is_correta ? '✨ Mandaste bem!' : '❌ Ops, não foi desta...'}
+            </h3>
+            <p className="text-slate-300 text-sm md:text-base leading-relaxed">{questaoAtual.explicacao}</p>
           </div>
         )}
-
+        <div className="flex gap-4 mb-10">
+          <button onClick={questaoAnterior} disabled={indiceAtual === 0} className="flex-1 bg-slate-700 hover:bg-slate-600 disabled:opacity-20 text-white font-bold py-4 rounded-xl transition">⬅ Anterior</button>
+          {!jaConfirmou ? (
+            <button onClick={confirmarResposta} disabled={!alternativaMarcada} className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-30 text-white font-bold py-4 rounded-xl transition">Confirmar</button>
+          ) : (
+            <button onClick={proximaQuestao} className="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 rounded-xl transition">
+              {indiceAtual + 1 === questoesFiltradas.length ? 'Ver Resultados ➔' : 'Próxima ➔'}
+            </button>
+          )}
+        </div>
       </div>
     </main>
   );
