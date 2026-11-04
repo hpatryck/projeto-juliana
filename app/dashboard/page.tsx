@@ -76,13 +76,22 @@ export default function Dashboard() {
               <span className="font-bold text-lg">Biologia</span>
             </button>
 
-            {/* LINGUAGENS (NOVO) */}
+            {/* LINGUAGENS */}
             <button 
               onClick={() => router.push('/quiz/linguagens')}
               className="col-span-2 md:col-span-1 bg-slate-800 border-2 border-orange-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(249,115,22,0.15)] group"
             >
               <span className="text-5xl mb-3 group-hover:scale-110 transition-transform">📚</span>
               <span className="font-bold text-lg">Linguagens</span>
+            </button>
+
+            {/* HISTÓRIA (NOVO) */}
+            <button 
+              onClick={() => router.push('/quiz/historia')}
+              className="col-span-2 md:col-span-1 bg-slate-800 border-2 border-amber-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(245,158,11,0.15)] group"
+            >
+              <span className="text-5xl mb-3 group-hover:scale-110 transition-transform">🏛️</span>
+              <span className="font-bold text-lg">História</span>
             </button>
 
             {/* Disciplinas Futuras */}
