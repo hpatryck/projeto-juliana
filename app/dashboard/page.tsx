@@ -32,6 +32,7 @@ export default function Dashboard() {
         
         {/* Cabeçalho */}
         <header className="flex justify-between items-center mb-10 bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl">
+          <title>JULIANA</title>
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-white">Olá, {nome}! 👋</h1>
             <p className="text-emerald-400 mt-2 font-medium">Pronta para gabaritar o ENEM?</p>
