@@ -53,7 +53,7 @@ export default function Dashboard() {
             {/* QUÍMICA */}
             <button 
               onClick={() => router.push('/quiz/quimica')}
-              className="col-span-2 md:col-span-1 bg-slate-800 border-2 border-emerald-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(16,185,129,0.15)] group"
+              className="col-span-1 bg-slate-800 border-2 border-emerald-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(16,185,129,0.15)] group"
             >
               <span className="text-5xl mb-3 group-hover:scale-110 transition-transform">🧪</span>
               <span className="font-bold text-lg">Química</span>
@@ -62,7 +62,7 @@ export default function Dashboard() {
             {/* GEOGRAFIA */}
             <button 
               onClick={() => router.push('/quiz/geografia')}
-              className="col-span-2 md:col-span-1 bg-slate-800 border-2 border-blue-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(59,130,246,0.15)] group"
+              className="col-span-1 bg-slate-800 border-2 border-blue-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(59,130,246,0.15)] group"
             >
               <span className="text-5xl mb-3 group-hover:scale-110 transition-transform">🌍</span>
               <span className="font-bold text-lg">Geografia</span>
@@ -71,7 +71,7 @@ export default function Dashboard() {
             {/* BIOLOGIA */}
             <button 
               onClick={() => router.push('/quiz/biologia')}
-              className="col-span-2 md:col-span-1 bg-slate-800 border-2 border-green-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(34,197,94,0.15)] group"
+              className="col-span-1 bg-slate-800 border-2 border-green-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(34,197,94,0.15)] group"
             >
               <span className="text-5xl mb-3 group-hover:scale-110 transition-transform">🧬</span>
               <span className="font-bold text-lg">Biologia</span>
@@ -80,25 +80,37 @@ export default function Dashboard() {
             {/* LINGUAGENS */}
             <button 
               onClick={() => router.push('/quiz/linguagens')}
-              className="col-span-2 md:col-span-1 bg-slate-800 border-2 border-orange-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(249,115,22,0.15)] group"
+              className="col-span-1 bg-slate-800 border-2 border-orange-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(249,115,22,0.15)] group"
             >
               <span className="text-5xl mb-3 group-hover:scale-110 transition-transform">📚</span>
               <span className="font-bold text-lg">Linguagens</span>
             </button>
 
-            {/* HISTÓRIA (NOVO) */}
+            {/* HISTÓRIA */}
             <button 
               onClick={() => router.push('/quiz/historia')}
-              className="col-span-2 md:col-span-1 bg-slate-800 border-2 border-amber-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(245,158,11,0.15)] group"
+              className="col-span-1 bg-slate-800 border-2 border-amber-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(245,158,11,0.15)] group"
             >
               <span className="text-5xl mb-3 group-hover:scale-110 transition-transform">🏛️</span>
               <span className="font-bold text-lg">História</span>
             </button>
 
-            {/* Disciplinas Futuras */}
-            <button disabled className="col-span-2 md:col-span-1 bg-slate-800/40 border border-slate-700 rounded-3xl p-6 flex flex-col items-center justify-center opacity-40 cursor-not-allowed">
-              <span className="text-5xl mb-3 grayscale">📐</span>
-              <span className="font-bold text-slate-400">Matemática</span>
+            {/* MATEMÁTICA */}
+            <button 
+              onClick={() => router.push('/quiz/matematica')}
+              className="col-span-1 bg-slate-800 border-2 border-indigo-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(99,102,241,0.15)] group"
+            >
+              <span className="text-5xl mb-3 group-hover:scale-110 transition-transform">📐</span>
+              <span className="font-bold text-lg">Matemática</span>
+            </button>
+
+            {/* FÍSICA */}
+            <button 
+              onClick={() => router.push('/quiz/fisica')}
+              className="col-span-1 bg-slate-800 border-2 border-cyan-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(6,182,212,0.15)] group"
+            >
+              <span className="text-5xl mb-3 group-hover:scale-110 transition-transform">⚡</span>
+              <span className="font-bold text-lg">Física</span>
             </button>
 
           </div>
