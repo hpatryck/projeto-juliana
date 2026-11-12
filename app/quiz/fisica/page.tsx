@@ -8,7 +8,7 @@ type Questao = { id: number; disciplina?: string; tema: string; enunciado: strin
 
 const TEMAS_DISPONIVEIS = [
   'Mecânica: Cinemática',
-  'Mecânica: Dinâmica:',
+  'Mecânica: Dinâmica',
   'Mecânica: Estática',
   'Mecânica: Hidrostática',
   'Termologia',
