@@ -136,21 +136,6 @@ export default function Dashboard() {
               <span className="text-blue-500 font-bold text-2xl hidden md:block group-hover:translate-x-2 transition-transform">➔</span>
             </button>
 
-            {/* Estatísticas */}
-            <button 
-              onClick={() => router.push('/estatisticas')}
-              className="w-full bg-slate-800 border border-slate-700 rounded-3xl p-6 flex items-center justify-between hover:bg-slate-700 hover:border-purple-500/50 transition-all shadow-lg group"
-            >
-              <div className="flex items-center gap-5">
-                <div className="bg-purple-900/30 p-4 rounded-2xl text-3xl group-hover:scale-110 transition-transform shadow-inner border border-purple-500/20">📊</div>
-                <div className="text-left">
-                  <h3 className="font-bold text-xl text-white mb-1">Estatísticas e Gráficos</h3>
-                  <p className="text-slate-400 text-sm md:text-base">Descobre onde és mais forte e o que precisa de mais atenção.</p>
-                </div>
-              </div>
-              <span className="text-purple-500 font-bold text-2xl hidden md:block group-hover:translate-x-2 transition-transform">➔</span>
-            </button>
-
             {/* Refazer Erros */}
             <button 
               onClick={() => router.push('/revisao')}
