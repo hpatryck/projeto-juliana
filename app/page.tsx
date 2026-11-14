@@ -1,84 +1,84 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function Home() {
-  const router = useRouter();
+export default function LoginScreen() {
   const [nome, setNome] = useState('');
-  const [senha, setSenha] = useState('');
+  const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
-  const [carregando, setCarregando] = useState(false);
+  const router = useRouter();
 
-  const handleEntrar = async (e: React.FormEvent) => {
+  // Se já houver um ID guardado de sessões anteriores, pode saltar o login no futuro
+  useEffect(() => {
+    const jogadorId = localStorage.getItem('jogadorId');
+    if (jogadorId) {
+      // Opcional: router.push('/dashboard'); 
+      // Por enquanto vamos deixar comentado para poder testar o botão à vontade
+    }
+  }, [router]);
+
+  const iniciarJogo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nome.trim() || !senha.trim()) return;
-
     setErro('');
-    setCarregando(true);
+    if (!nome.trim()) return;
 
+    setLoading(true);
+    
     try {
-      const res = await fetch('/api/login', {
+      // Chama a nossa nova API de login
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, senha }),
+        body: JSON.stringify({ nome: nome.trim() }),
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (!res.ok) {
-        setErro(data.error || 'Erro ao entrar.');
-        setCarregando(false);
-        return;
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao entrar');
       }
 
-      localStorage.setItem('jogadorId', String(data.id));
+      // LOGIN RÍGIDO: Guardamos o ID oficial da base de dados e o nome!
+      localStorage.setItem('jogadorId', data.id);
       localStorage.setItem('jogadorNome', data.nome);
+      
       router.push('/dashboard');
-    } catch {
-      setErro('Erro de conexão com o servidor.');
-      setCarregando(false);
+    } catch (err: any) {
+      setErro(err.message);
+      setLoading(false);
     }
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-900 p-4 text-slate-100">
-      <div className="w-full max-w-md bg-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl">
-        <h1 className="text-3xl font-bold text-white text-center mb-2">Quiz ENEM</h1>
-        <p className="text-slate-400 text-center mb-8">Identifica-te para começar</p>
-
-        <form onSubmit={handleEntrar} className="flex flex-col gap-4">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-900 p-6 text-slate-100">
+      <div className="w-full max-w-sm bg-slate-800 rounded-2xl shadow-xl p-8 border border-slate-700">
+        <h1 className="text-3xl font-bold text-center mb-2">PROJETO JULIANA</h1>
+        <p className="text-center text-slate-400 mb-8">Hi! What's ur name?</p>
+        
+        <form onSubmit={iniciarJogo} className="flex flex-col gap-4">
           <input
             type="text"
-            required
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            placeholder="Nome"
-            className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-white focus:outline-none focus:border-emerald-500 transition"
-          />
-
-          <input
-            type="password"
+            placeholder="Name"
+            className="bg-slate-700 border border-slate-600 rounded-lg p-4 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition"
             required
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            placeholder="Senha"
-            className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-white focus:outline-none focus:border-emerald-500 transition"
+            autoComplete="off"
+            disabled={loading}
           />
-
-          {erro && (
-            <p className="text-red-400 text-sm text-center font-medium">{erro}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={carregando}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl transition mt-2"
+          
+          {erro && <p className="text-red-400 text-sm text-center">{erro}</p>}
+          
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="bg-emerald-600 text-white font-bold py-4 rounded-lg hover:bg-emerald-500 transition disabled:opacity-50"
           >
-            {carregando ? 'A entrar...' : 'Entrar ➔'}
+            {loading ? 'A conectar à base de dados...' : 'Entrar'}
           </button>
         </form>
       </div>
     </main>
   );
-}
+} 
