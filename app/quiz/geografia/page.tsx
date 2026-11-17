@@ -7,7 +7,7 @@ type Alternativa = { id: number; texto: string; is_correta: boolean };
 type Questao = { id: number; tema: string; enunciado: string; explicacao: string; alternativas: Alternativa[] };
 
 const TEMAS_DISPONIVEIS = [
-  'Relevos e suas causas', 'Biomas', 'Movimentos populacionais',
+  'Relevos e suas causas', 'Biomas', 'Biomas Maranhenses', 'Movimentos populacionais',
   'Clima', 'Tipos de plantações', 'Ciclos biogeoquimicos'
 ];
 

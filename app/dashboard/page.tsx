@@ -113,6 +113,15 @@ export default function Dashboard() {
               <span className="font-bold text-lg">Física</span>
             </button>
 
+            {/* OBRAS LITERÁRIAS */}
+            <button 
+              onClick={() => router.push('/quiz/obras-literarias')}
+              className="col-span-1 bg-slate-800 border-2 border-rose-500 rounded-3xl p-6 flex flex-col items-center justify-center hover:bg-slate-700 hover:-translate-y-1 transition-all shadow-[0_0_20px_rgba(244,63,94,0.15)] group"
+            >
+              <span className="text-5xl mb-3 group-hover:scale-110 transition-transform">📖</span>
+              <span className="font-bold text-lg text-center leading-tight">Obras Literárias</span>
+            </button>
+
           </div>
         </section>
 

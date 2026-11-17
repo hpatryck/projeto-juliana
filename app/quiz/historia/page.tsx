@@ -17,7 +17,8 @@ const TEMAS_DISPONIVEIS = [
   'Era Vargas e Estado Novo (1937 - 1945)',
   'República Populista / Democrática (1945 - 1964)',
   'Ditadura Civil-Militar (1964 - 1985)',
-  'Nova República (1985 - Atualidade)'
+  'Nova República (1985 - Atualidade)',
+  'Revoltas Nordestinas'
 ];
 
 export default function QuizHistoria() {
